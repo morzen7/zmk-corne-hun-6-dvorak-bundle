@@ -1,16 +1,23 @@
 /*
  * Dongle-as-central shield: no physical keys of its own, just a mock kscan
- * so the build has a chosen zmk,kscan. The matrix-transform mirrors the
- * real corne_left/corne_right layout so the total key-position count (42)
- * matches config/corne.keymap.
+ * so the build has a chosen zmk,kscan. corne_left/corne_right resolve
+ * their positions through the "zmk,physical-layout" system (see
+ * corne.dtsi upstream: chosen zmk,physical-layout = &foostan_corne_6col_layout,
+ * whose position-map is what actually numbers the 42 keymap positions),
+ * NOT through a bare "zmk,matrix_transform" chosen. Using the bare
+ * transform here resolved positions differently and shifted every key by
+ * one, so this reuses the same foostan_corne_6col_layout + position-map
+ * the real corne shield uses, just with our own (inert) transform/kscan
+ * underneath it.
  */
 
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <layouts/foostan/corne/6column.dtsi>
 
 / {
     chosen {
         zmk,kscan = &mock_kscan;
-        zmk,matrix_transform = &default_transform;
+        zmk,physical-layout = &foostan_corne_6col_layout;
     };
 
     mock_kscan: mock_kscan_0 {
@@ -31,4 +38,8 @@ RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5)   RC(2,6) RC(2,7) RC(2,8) RC(2,9
                         RC(3,3) RC(3,4) RC(3,5)   RC(3,6) RC(3,7) RC(3,8)
         >;
     };
+};
+
+&foostan_corne_6col_layout {
+    transform = <&default_transform>;
 };
