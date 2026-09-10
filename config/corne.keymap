@@ -43,11 +43,11 @@
             bindings = <&aa_lower>, <&kp>;
         };
         // Tap the thumb SHIFT key once for a normal shift, twice within
-        // 200ms for caps word (auto-releases after the next word).
+        // 300ms for caps word (auto-releases after the next word).
         td_shift: tap_dance_shift {
             compatible = "zmk,behavior-tap-dance";
             #binding-cells = <0>;
-            tapping-term-ms = <200>;
+            tapping-term-ms = <300>;
             bindings = <&kp LSHIFT>, <&caps_word>;
         };
     };
