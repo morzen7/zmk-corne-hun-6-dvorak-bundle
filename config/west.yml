@@ -4,13 +4,15 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: carrefinho
       url-base: https://github.com/carrefinho
+    - name: morzen7
+      url-base: https://github.com/morzen7
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: v0.3
       import: app/west.yml
     - name: prospector-zmk-module
-      remote: carrefinho
+      remote: morzen7
       revision: main
   self:
     path: config
