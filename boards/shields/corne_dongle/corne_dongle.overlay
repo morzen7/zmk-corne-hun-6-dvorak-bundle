@@ -1,27 +1,36 @@
 /*
  * Dongle-as-central shield: no physical keys of its own, just a mock kscan
  * so the build has a chosen zmk,kscan. corne_left/corne_right resolve
- * their positions through the "zmk,physical-layout" system (see
- * corne.dtsi upstream: chosen zmk,physical-layout = &foostan_corne_6col_layout,
- * whose position-map is what actually numbers the 42 keymap positions),
- * NOT through a bare "zmk,matrix_transform" chosen. Using the bare
- * transform here resolved positions differently and shifted every key by
- * one, so this reuses the same foostan_corne_6col_layout + position-map
- * the real corne shield uses, just with our own (inert) transform/kscan
- * underneath it.
+ * their positions through the "zmk,physical-layout" system (see corne.dtsi
+ * upstream: chosen zmk,physical-layout = &foostan_corne_6col_layout, whose
+ * position-map is what actually numbers the 42 keymap positions), NOT
+ * through a bare "zmk,matrix_transform" chosen.
+ *
+ * On every BLE connect, the central pushes the *index* of its selected
+ * physical layout to each peripheral (split/bluetooth/central.c:
+ * update_peripherals_selected_physical_layout -> service.c:
+ * split_svc_select_phys_layout), and the peripheral looks that index up in
+ * ITS OWN local list of physical-layout nodes (physical_layouts.c:
+ * zmk_physical_layouts_select). corne_left/corne_right pull in both
+ * 5column.dtsi and 6column.dtsi via corne.dtsi, in that order, so on them
+ * index 0 = 5-column and index 1 = 6-column. This shield used to include
+ * only 6column.dtsi, which made 6-column index 0 here - so on connect the
+ * dongle told the peripherals "select index 0", and they switched onto
+ * their *5-column* layout (fewer columns, different matrix-transform and
+ * position numbering), scrambling key positions. Including 5column.dtsi
+ * here too, in the same order as corne.dtsi, keeps the indices aligned
+ * even though the dongle itself never actually scans through either
+ * transform.
  */
 
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <layouts/foostan/corne/5column.dtsi>
 #include <layouts/foostan/corne/6column.dtsi>
 
 / {
     chosen {
         zmk,kscan = &mock_kscan;
         zmk,physical-layout = &foostan_corne_6col_layout;
-        /* TEMPORARY: routes USB logging (CONFIG_ZMK_USB_LOGGING) to the
-         * studio-rpc-usb-uart snippet's CDC-ACM UART. Remove along with
-         * that debug config once the position-shift issue is diagnosed. */
-        zephyr,console = &snippet_studio_rpc_usb_uart;
     };
 
     mock_kscan: mock_kscan_0 {
@@ -42,8 +51,24 @@ RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5)   RC(2,6) RC(2,7) RC(2,8) RC(2,9
                         RC(3,3) RC(3,4) RC(3,5)   RC(3,6) RC(3,7) RC(3,8)
         >;
     };
+
+    five_column_transform: keymap_transform_1 {
+        compatible = "zmk,matrix-transform";
+        columns = <10>;
+        rows = <4>;
+        map = <
+RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5)  RC(0,6) RC(0,7) RC(0,8) RC(0,9) RC(0,10)
+RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5)  RC(1,6) RC(1,7) RC(1,8) RC(1,9) RC(1,10)
+RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5)  RC(2,6) RC(2,7) RC(2,8) RC(2,9) RC(2,10)
+                        RC(3,3) RC(3,4) RC(3,5)  RC(3,6) RC(3,7) RC(3,8)
+        >;
+    };
 };
 
 &foostan_corne_6col_layout {
     transform = <&default_transform>;
+};
+
+&foostan_corne_5col_layout {
+    transform = <&five_column_transform>;
 };
