@@ -18,6 +18,10 @@
     chosen {
         zmk,kscan = &mock_kscan;
         zmk,physical-layout = &foostan_corne_6col_layout;
+        /* TEMPORARY: routes USB logging (CONFIG_ZMK_USB_LOGGING) to the
+         * studio-rpc-usb-uart snippet's CDC-ACM UART. Remove along with
+         * that debug config once the position-shift issue is diagnosed. */
+        zephyr,console = &snippet_studio_rpc_usb_uart;
     };
 
     mock_kscan: mock_kscan_0 {
